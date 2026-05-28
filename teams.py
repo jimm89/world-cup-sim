@@ -1,49 +1,31 @@
-teams = {
-    "England": {
-        "elo": 1985,
-        "attack": 1.10,
-        "defence": 0.90
-    },
-    
-    "Brazil": {
-        "elo": 2030,
-        "attack": 1.20,
-        "defence": 0.85
-    },
+import pandas as pd
 
-    "France": {
-        "elo": 2025,
-        "attack": 1.25,
-        "defence": 0.82
-    },
 
-    "Spain": {
-        "elo": 1995,
-        "attack": 1.15,
-        "defence": 0.88
-    },
+teams_df = pd.read_csv(
+    "data/teams.csv"
+)
 
-    "Germany": {
-        "elo": 1960,
-        "attack": 1.08,
-        "defence": 0.90
-    },
+elo_df = pd.read_csv(
+    "data/real_elo.csv"
+)
 
-    "Argentina": {
-        "elo": 2050,
-        "attack": 1.22,
-        "defence": 0.84
-    },
+df = teams_df.merge(
+    elo_df,
+    on="team",
+    how="left",
+    suffixes=("", "_real")
+)
 
-    "Portugal": {
-        "elo": 1940,
-        "attack": 1.10,
-        "defence": 0.91
-    },
+df["elo"] = (
+    df["elo_real"]
+    .fillna(df["elo"])
+)
 
-    "Netherlands": {
-        "elo": 1980,
-        "attack": 1.14,
-        "defence": 0.88
-    }
-}
+df = df.drop(
+    columns=["elo_real"]
+)
+
+teams = (
+    df.set_index("team")
+    .to_dict(orient="index")
+)

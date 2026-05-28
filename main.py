@@ -1,23 +1,21 @@
 from groups_data import groups
+
 from tournament.world_cup import (
     simulate_world_cup
 )
 
-qualified = (
+quarter_finalists = (
     simulate_world_cup(
         groups
     )
 )
 
 print(
-    "\nQUALIFIED TEAMS\n"
+    "\nQUARTER FINALISTS\n"
 )
 
-for group, teams in (
-    qualified.items()
+for team in (
+    quarter_finalists
 ):
 
-    print(
-        f"Group {group}: "
-        f"{teams}"
-    )
+    print(team)
