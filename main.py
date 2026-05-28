@@ -5,39 +5,88 @@ from tournament.world_cup import (
     simulate_world_cup
 )
 
-N_SIMS = 1000
+N_SIMS = 10_000
 
-champions = Counter()
+group_counter = Counter()
+quarter_counter = Counter()
+semi_counter = Counter()
+final_counter = Counter()
+champion_counter = Counter()
+
 
 for _ in range(N_SIMS):
 
-    champion = (
+    stats = (
         simulate_world_cup(
             groups
         )
     )
 
-    champions[
-        champion
+    for team in stats["group"]:
+        group_counter[team] += 1
+
+    for team in stats["quarter"]:
+        quarter_counter[team] += 1
+
+    for team in stats["semi"]:
+        semi_counter[team] += 1
+
+    for team in stats["final"]:
+        final_counter[team] += 1
+
+    champion_counter[
+        stats["champion"]
     ] += 1
 
 
+all_teams = []
+
+for group in groups.values():
+    all_teams.extend(group)
+
+
 print(
-    f"\nWORLD CUP RESULTS "
+    f"\nWORLD CUP "
     f"({N_SIMS:,} SIMS)\n"
 )
 
-for team, wins in (
-    champions.most_common()
-):
+for team in sorted(all_teams):
 
-    probability = (
-        wins
+    group_pct = (
+        group_counter[team]
+        / N_SIMS
+        * 100
+    )
+
+    qf_pct = (
+        quarter_counter[team]
+        / N_SIMS
+        * 100
+    )
+
+    sf_pct = (
+        semi_counter[team]
+        / N_SIMS
+        * 100
+    )
+
+    final_pct = (
+        final_counter[team]
+        / N_SIMS
+        * 100
+    )
+
+    champion_pct = (
+        champion_counter[team]
         / N_SIMS
         * 100
     )
 
     print(
         f"{team:<15}"
-        f"{probability:>6.2f}%"
+        f"Group: {group_pct:>5.1f}% "
+        f"| QF: {qf_pct:>5.1f}% "
+        f"| SF: {sf_pct:>5.1f}% "
+        f"| Final: {final_pct:>5.1f}% "
+        f"| Win: {champion_pct:>5.1f}%"
     )

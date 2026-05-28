@@ -5,8 +5,21 @@ from tournament.knockout import (
     play_knockout_match
 )
 
+# Load bracket once
+BRACKET = pd.read_csv(
+    "data/bracket.csv"
+)
+
 
 def simulate_world_cup(groups):
+
+    stats = {
+        "group": [],
+        "quarter": [],
+        "semi": [],
+        "final": [],
+        "champion": None
+    }
 
     qualified = {}
 
@@ -17,11 +30,10 @@ def simulate_world_cup(groups):
             teams
         )
 
-        top_two = (
-            table.head(2)
-            .index
-            .tolist()
-        )
+        top_two = table[:2]
+
+        for team in top_two:
+            stats["group"].append(team)
 
         qualified[
             f"{group_name}1"
@@ -32,14 +44,10 @@ def simulate_world_cup(groups):
         ] = top_two[1]
 
     # ROUND OF 16
-    bracket = pd.read_csv(
-        "data/bracket.csv"
-    )
-
     round_16_winners = []
 
     for _, row in (
-        bracket.iterrows()
+        BRACKET.iterrows()
     ):
 
         team_1 = qualified[
@@ -61,6 +69,10 @@ def simulate_world_cup(groups):
             winner
         )
 
+    stats["quarter"].extend(
+        round_16_winners
+    )
+
     # QUARTER FINALS
     quarter_final_winners = []
 
@@ -80,6 +92,10 @@ def simulate_world_cup(groups):
         quarter_final_winners.append(
             winner
         )
+
+    stats["semi"].extend(
+        quarter_final_winners
+    )
 
     # SEMI FINALS
     semi_final_winners = []
@@ -101,6 +117,10 @@ def simulate_world_cup(groups):
             winner
         )
 
+    stats["final"].extend(
+        semi_final_winners
+    )
+
     # FINAL
     champion = (
         play_knockout_match(
@@ -109,4 +129,6 @@ def simulate_world_cup(groups):
         )
     )
 
-    return champion
+    stats["champion"] = champion
+
+    return stats

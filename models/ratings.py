@@ -4,7 +4,17 @@ from teams import teams
 BASE_XG = 1.35
 
 
-def expected_goals(team_1, team_2):
+HOSTS = [
+    "USA",
+    "Canada",
+    "Mexico"
+]
+
+
+def expected_goals(
+    team_1,
+    team_2
+):
 
     t1 = teams[team_1]
     t2 = teams[team_2]
@@ -31,5 +41,11 @@ def expected_goals(team_1, team_2):
         * t1["defence"]
         / elo_multiplier
     )
+
+    if team_1 in HOSTS:
+        xg_1 += 0.15
+
+    if team_2 in HOSTS:
+        xg_2 += 0.15
 
     return xg_1, xg_2
