@@ -1,25 +1,17 @@
 import pandas as pd
 
-from tournament.groups import (
-    simulate_group
-)
-
+from tournament.groups import simulate_group
 from tournament.knockout import (
     play_knockout_match
 )
 
 
-def simulate_world_cup(
-    groups
-):
+def simulate_world_cup(groups):
 
     qualified = {}
 
     # GROUP STAGE
-    for (
-        group_name,
-        teams
-    ) in groups.items():
+    for group_name, teams in groups.items():
 
         _, table = simulate_group(
             teams
@@ -44,7 +36,7 @@ def simulate_world_cup(
         "data/bracket.csv"
     )
 
-    quarter_finalists = []
+    round_16_winners = []
 
     for _, row in (
         bracket.iterrows()
@@ -65,8 +57,56 @@ def simulate_world_cup(
             )
         )
 
-        quarter_finalists.append(
+        round_16_winners.append(
             winner
         )
 
-    return quarter_finalists
+    # QUARTER FINALS
+    quarter_final_winners = []
+
+    for i in range(
+        0,
+        len(round_16_winners),
+        2
+    ):
+
+        winner = (
+            play_knockout_match(
+                round_16_winners[i],
+                round_16_winners[i + 1]
+            )
+        )
+
+        quarter_final_winners.append(
+            winner
+        )
+
+    # SEMI FINALS
+    semi_final_winners = []
+
+    for i in range(
+        0,
+        len(quarter_final_winners),
+        2
+    ):
+
+        winner = (
+            play_knockout_match(
+                quarter_final_winners[i],
+                quarter_final_winners[i + 1]
+            )
+        )
+
+        semi_final_winners.append(
+            winner
+        )
+
+    # FINAL
+    champion = (
+        play_knockout_match(
+            semi_final_winners[0],
+            semi_final_winners[1]
+        )
+    )
+
+    return champion
