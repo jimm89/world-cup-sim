@@ -1,3 +1,5 @@
+
+import time
 from collections import Counter
 
 from groups_data import groups
@@ -13,6 +15,7 @@ semi_counter = Counter()
 final_counter = Counter()
 champion_counter = Counter()
 
+start = time.time()
 
 for _ in range(N_SIMS):
 
@@ -110,3 +113,10 @@ for team in sorted(
         f"| Final: {final_pct:>5.1f}% "
         f"| Win: {champion_pct:>5.1f}%"
     )
+
+    end = time.time()
+
+print(
+    f"\nRuntime: "
+    f"{end - start:.2f}s"
+)

@@ -1,20 +1,51 @@
 import pandas as pd
 
-from tournament.groups import simulate_group
+from tournament.groups import (
+    simulate_group
+)
+
 from tournament.knockout import (
     play_knockout_match
 )
 
-# Load bracket once
-BRACKET = pd.read_csv(
-    "data/bracket.csv"
+
+PATHS = pd.read_csv(
+    "data/knockout_paths.csv"
 )
 
 
-def simulate_world_cup(groups):
+def play_round(teams):
+
+    winners = []
+
+    for i in range(
+        0,
+        len(teams),
+        2
+    ):
+
+        winner = (
+            play_knockout_match(
+                teams[i],
+                teams[i + 1]
+            )
+        )
+
+        winners.append(
+            winner
+        )
+
+    return winners
+
+
+def simulate_world_cup(
+    groups
+):
 
     stats = {
         "group": [],
+        "round_32": [],
+        "round_16": [],
         "quarter": [],
         "semi": [],
         "final": [],
@@ -22,113 +53,182 @@ def simulate_world_cup(groups):
     }
 
     qualified = {}
+    third_place = []
 
     # GROUP STAGE
-    for group_name, teams in groups.items():
+    for (
+        group_name,
+        teams
+    ) in groups.items():
 
-        _, table = simulate_group(
-            teams
+        _, table = (
+            simulate_group(
+                teams
+            )
         )
 
-        top_two = table[:2]
-
-        for team in top_two:
-            stats["group"].append(team)
+        winner = table[0][0]
+        runner_up = table[1][0]
+        third = table[2]
 
         qualified[
             f"{group_name}1"
-        ] = top_two[0]
+        ] = winner
 
         qualified[
             f"{group_name}2"
-        ] = top_two[1]
+        ] = runner_up
 
-    # ROUND OF 16
-    round_16_winners = []
+        stats[
+            "group"
+        ].extend(
+            [winner, runner_up]
+        )
+
+        third_place.append(
+            {
+                "group":
+                    group_name,
+                "team":
+                    third[0],
+                "points":
+                    third[1]["points"],
+                "gd":
+                    (
+                        third[1]["gf"]
+                        - third[1]["ga"]
+                    ),
+                "gf":
+                    third[1]["gf"]
+            }
+        )
+
+    # BEST THIRD-PLACE TEAMS
+    third_place_sorted = sorted(
+        third_place,
+        key=lambda x: (
+            x["points"],
+            x["gd"],
+            x["gf"]
+        ),
+        reverse=True
+    )
+
+    best_third = [
+        x["team"]
+        for x in (
+            third_place_sorted[:8]
+        )
+    ]
+
+    stats[
+        "group"
+    ].extend(
+        best_third
+    )
+
+    # SLOT LOOKUP
+    slot_lookup = {}
+
+    for (
+        key,
+        team
+    ) in qualified.items():
+
+        slot_lookup[
+            key
+        ] = team
+
+    for i, team in enumerate(
+        best_third,
+        start=1
+    ):
+
+        slot_lookup[
+            f"Third{i}"
+        ] = team
+
+    # ROUND OF 32 BRACKET
+    knockout_teams = []
 
     for _, row in (
-        BRACKET.iterrows()
+        PATHS.iterrows()
     ):
 
-        team_1 = qualified[
-            row["team_1"]
-        ]
-
-        team_2 = qualified[
-            row["team_2"]
-        ]
-
-        winner = (
-            play_knockout_match(
-                team_1,
-                team_2
-            )
+        knockout_teams.append(
+            slot_lookup[
+                row["source"]
+            ]
         )
 
-        round_16_winners.append(
-            winner
-        )
-
-    stats["quarter"].extend(
-        round_16_winners
+    stats[
+        "round_32"
+    ].extend(
+        knockout_teams
     )
 
-    # QUARTER FINALS
-    quarter_final_winners = []
-
-    for i in range(
-        0,
-        len(round_16_winners),
-        2
-    ):
-
-        winner = (
-            play_knockout_match(
-                round_16_winners[i],
-                round_16_winners[i + 1]
-            )
+    # ROUND OF 32
+    round_16 = (
+        play_round(
+            knockout_teams
         )
-
-        quarter_final_winners.append(
-            winner
-        )
-
-    stats["semi"].extend(
-        quarter_final_winners
     )
 
-    # SEMI FINALS
-    semi_final_winners = []
+    stats[
+        "round_16"
+    ].extend(
+        round_16
+    )
 
-    for i in range(
-        0,
-        len(quarter_final_winners),
-        2
-    ):
-
-        winner = (
-            play_knockout_match(
-                quarter_final_winners[i],
-                quarter_final_winners[i + 1]
-            )
+    # ROUND OF 16
+    quarter_finalists = (
+        play_round(
+            round_16
         )
+    )
 
-        semi_final_winners.append(
-            winner
+    stats[
+        "quarter"
+    ].extend(
+        quarter_finalists
+    )
+
+    # QUARTERS
+    semi_finalists = (
+        play_round(
+            quarter_finalists
         )
+    )
 
-    stats["final"].extend(
-        semi_final_winners
+    stats[
+        "semi"
+    ].extend(
+        semi_finalists
+    )
+
+    # SEMIS
+    finalists = (
+        play_round(
+            semi_finalists
+        )
+    )
+
+    stats[
+        "final"
+    ].extend(
+        finalists
     )
 
     # FINAL
     champion = (
         play_knockout_match(
-            semi_final_winners[0],
-            semi_final_winners[1]
+            finalists[0],
+            finalists[1]
         )
     )
 
-    stats["champion"] = champion
+    stats[
+        "champion"
+    ] = champion
 
     return stats
