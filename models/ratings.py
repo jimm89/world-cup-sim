@@ -1,8 +1,8 @@
 import numpy as np
+
 from teams import teams
 
 BASE_XG = 1.35
-
 
 HOSTS = [
     "USA",
@@ -30,22 +30,33 @@ def expected_goals(
 
     xg_1 = (
         BASE_XG
-        * t1["attack"]
-        * t2["defence"]
         * elo_multiplier
     )
 
     xg_2 = (
         BASE_XG
-        * t2["attack"]
-        * t1["defence"]
         / elo_multiplier
     )
 
+    # Host advantage
     if team_1 in HOSTS:
         xg_1 += 0.15
 
     if team_2 in HOSTS:
         xg_2 += 0.15
 
-    return xg_1, xg_2
+    # Prevent absurd lows
+    xg_1 = max(
+        xg_1,
+        0.2
+    )
+
+    xg_2 = max(
+        xg_2,
+        0.2
+    )
+
+    return (
+        xg_1,
+        xg_2
+    )

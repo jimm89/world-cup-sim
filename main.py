@@ -16,23 +16,37 @@ champion_counter = Counter()
 
 for _ in range(N_SIMS):
 
-    stats = (
-        simulate_world_cup(
-            groups
-        )
+    stats = simulate_world_cup(
+        groups
     )
 
-    for team in stats["group"]:
-        group_counter[team] += 1
+    for team in (
+        stats["group"]
+    ):
+        group_counter[
+            team
+        ] += 1
 
-    for team in stats["quarter"]:
-        quarter_counter[team] += 1
+    for team in (
+        stats["quarter"]
+    ):
+        quarter_counter[
+            team
+        ] += 1
 
-    for team in stats["semi"]:
-        semi_counter[team] += 1
+    for team in (
+        stats["semi"]
+    ):
+        semi_counter[
+            team
+        ] += 1
 
-    for team in stats["final"]:
-        final_counter[team] += 1
+    for team in (
+        stats["final"]
+    ):
+        final_counter[
+            team
+        ] += 1
 
     champion_counter[
         stats["champion"]
@@ -41,8 +55,12 @@ for _ in range(N_SIMS):
 
 all_teams = []
 
-for group in groups.values():
-    all_teams.extend(group)
+for group in (
+    groups.values()
+):
+    all_teams.extend(
+        group
+    )
 
 
 print(
@@ -50,7 +68,9 @@ print(
     f"({N_SIMS:,} SIMS)\n"
 )
 
-for team in sorted(all_teams):
+for team in sorted(
+    all_teams
+):
 
     group_pct = (
         group_counter[team]
