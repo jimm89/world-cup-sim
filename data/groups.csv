@@ -1,49 +1,49 @@
 group,team
-A,USA
 A,Mexico
-A,Canada
-A,Costa Rica
-B,Argentina
-B,Uruguay
-B,Chile
-B,Colombia
+A,South Korea
+A,South Africa
+A,Czechia
+B,Canada
+B,Switzerland
+B,Qatar
+B,Bosnia and Herzegovina
 C,Brazil
-C,Ecuador
-C,Peru
-C,Paraguay
-D,England
-D,Netherlands
-D,Sweden
+C,Morocco
+C,Scotland
+C,Haiti
+D,USA
+D,Australia
+D,Paraguay
 D,Turkey
-E,France
-E,Belgium
-E,Switzerland
-E,Austria
-F,Spain
-F,Portugal
-F,Denmark
-F,Serbia
-G,Germany
-G,Croatia
-G,Poland
-G,Ukraine
-H,Italy
-H,Morocco
-H,Senegal
-H,Nigeria
-I,Japan
-I,South Korea
-I,Australia
-I,Iran
-J,Saudi Arabia
-J,Qatar
-J,Egypt
+E,Germany
+E,Ecuador
+E,Ivory Coast
+E,Curacao
+F,Netherlands
+F,Japan
+F,Tunisia
+F,Sweden
+G,Belgium
+G,Iran
+G,Egypt
+G,New Zealand
+H,Spain
+H,Uruguay
+H,Saudi Arabia
+H,Cape Verde
+I,France
+I,Senegal
+I,Norway
+I,Iraq
+J,Argentina
+J,Austria
 J,Algeria
-K,Cameroon
-K,Ghana
-K,Tunisia
-K,Ivory Coast
-L,New Zealand
+J,Jordan
+K,Portugal
+K,Colombia
+K,Uzbekistan
+K,Congo DR
+L,England
+L,Croatia
+L,Ghana
 L,Panama
-L,Jamaica
-L,Honduras

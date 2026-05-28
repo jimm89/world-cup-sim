@@ -8,15 +8,47 @@ from tournament.knockout import (
     play_knockout_match
 )
 
+from models.match import (
+    simulate_match
+)
+
 
 PATHS = pd.read_csv(
     "data/knockout_paths.csv"
 )
 
+THIRD_PLACE_TABLE = (
+    pd.read_csv(
+        "data/third_place_permutations.csv"
+    )
+)
 
-def play_round(teams):
+DYNAMIC_SLOTS = [
+    "A1",
+    "B1",
+    "D1",
+    "E1",
+    "G1",
+    "I1",
+    "K1",
+    "L1"
+]
+
+
+def play_round(
+    teams,
+    stats,
+    verbose=False,
+    round_name=""
+):
 
     winners = []
+
+    if verbose:
+
+        print(
+            f"\n{round_name.upper()}"
+        )
 
     for i in range(
         0,
@@ -24,22 +56,97 @@ def play_round(teams):
         2
     ):
 
-        winner = (
-            play_knockout_match(
-                teams[i],
-                teams[i + 1]
+        team_1 = teams[i]
+        team_2 = teams[i + 1]
+
+        g1, g2 = (
+            simulate_match(
+                team_1,
+                team_2
             )
         )
+
+        # Track goals
+        stats[
+            "goals_for"
+        ][team_1] = (
+            stats[
+                "goals_for"
+            ].get(
+                team_1,
+                0
+            ) + g1
+        )
+
+        stats[
+            "goals_against"
+        ][team_1] = (
+            stats[
+                "goals_against"
+            ].get(
+                team_1,
+                0
+            ) + g2
+        )
+
+        stats[
+            "goals_for"
+        ][team_2] = (
+            stats[
+                "goals_for"
+            ].get(
+                team_2,
+                0
+            ) + g2
+        )
+
+        stats[
+            "goals_against"
+        ][team_2] = (
+            stats[
+                "goals_against"
+            ].get(
+                team_2,
+                0
+            ) + g1
+        )
+
+        if g1 == g2:
+
+            winner = (
+                play_knockout_match(
+                    team_1,
+                    team_2
+                )
+            )
+
+        else:
+
+            winner = (
+                team_1
+                if g1 > g2
+                else team_2
+            )
 
         winners.append(
             winner
         )
 
+        if verbose:
+
+            print(
+                f"{team_1} "
+                f"{g1}-{g2} "
+                f"{team_2} "
+                f"→ {winner}"
+            )
+
     return winners
 
 
 def simulate_world_cup(
-    groups
+    groups,
+    verbose=False
 ):
 
     stats = {
@@ -49,11 +156,19 @@ def simulate_world_cup(
         "quarter": [],
         "semi": [],
         "final": [],
-        "champion": None
+        "champion": None,
+        "goals_for": {},
+        "goals_against": {}
     }
 
     qualified = {}
     third_place = []
+
+    if verbose:
+
+        print(
+            "\nGROUP STAGE"
+        )
 
     # GROUP STAGE
     for (
@@ -61,11 +176,83 @@ def simulate_world_cup(
         teams
     ) in groups.items():
 
-        _, table = (
+        fixtures, table = (
             simulate_group(
                 teams
             )
         )
+
+        # Track goals
+        for (
+            t1,
+            g1,
+            g2,
+            t2
+        ) in fixtures:
+
+            stats[
+                "goals_for"
+            ][t1] = (
+                stats[
+                    "goals_for"
+                ].get(
+                    t1,
+                    0
+                ) + g1
+            )
+
+            stats[
+                "goals_against"
+            ][t1] = (
+                stats[
+                    "goals_against"
+                ].get(
+                    t1,
+                    0
+                ) + g2
+            )
+
+            stats[
+                "goals_for"
+            ][t2] = (
+                stats[
+                    "goals_for"
+                ].get(
+                    t2,
+                    0
+                ) + g2
+            )
+
+            stats[
+                "goals_against"
+            ][t2] = (
+                stats[
+                    "goals_against"
+                ].get(
+                    t2,
+                    0
+                ) + g1
+            )
+
+        if verbose:
+
+            print(
+                f"\nGroup "
+                f"{group_name}"
+            )
+
+            for (
+                t1,
+                g1,
+                g2,
+                t2
+            ) in fixtures:
+
+                print(
+                    f"{t1} "
+                    f"{g1}-{g2} "
+                    f"{t2}"
+                )
 
         winner = table[0][0]
         runner_up = table[1][0]
@@ -114,20 +301,38 @@ def simulate_world_cup(
         reverse=True
     )
 
-    best_third = [
-        x["team"]
-        for x in (
-            third_place_sorted[:8]
-        )
-    ]
+    best_third = (
+        third_place_sorted[:8]
+    )
 
     stats[
         "group"
     ].extend(
-        best_third
+        [
+            x["team"]
+            for x in best_third
+        ]
     )
 
-    # SLOT LOOKUP
+    groups_key = "".join(
+        sorted(
+            [
+                x["group"]
+                for x in best_third
+            ]
+        )
+    )
+
+    mapping_row = (
+        THIRD_PLACE_TABLE[
+            THIRD_PLACE_TABLE[
+                "groups"
+            ]
+            == groups_key
+        ]
+        .iloc[0]
+    )
+
     slot_lookup = {}
 
     for (
@@ -139,16 +344,46 @@ def simulate_world_cup(
             key
         ] = team
 
-    for i, team in enumerate(
-        best_third,
-        start=1
+    third_lookup = {
+        x["group"]:
+        x["team"]
+        for x in best_third
+    }
+
+    for slot in (
+        DYNAMIC_SLOTS
     ):
 
-        slot_lookup[
-            f"Third{i}"
-        ] = team
+        third_ref = (
+            mapping_row[
+                slot
+            ]
+        )
 
-    # ROUND OF 32 BRACKET
+        if pd.isna(
+            third_ref
+        ):
+            continue
+
+        third_group = (
+            str(
+                third_ref
+            )[0]
+        )
+
+        if (
+            third_group
+            in third_lookup
+        ):
+
+            slot_lookup[
+                f"{slot}_OPP"
+            ] = (
+                third_lookup[
+                    third_group
+                ]
+            )
+
     knockout_teams = []
 
     for _, row in (
@@ -163,63 +398,52 @@ def simulate_world_cup(
 
     stats[
         "round_32"
-    ].extend(
-        knockout_teams
-    )
+    ] = knockout_teams
 
-    # ROUND OF 32
-    round_16 = (
-        play_round(
-            knockout_teams
-        )
+    round_16 = play_round(
+        knockout_teams,
+        stats,
+        verbose,
+        "Round of 32"
     )
 
     stats[
         "round_16"
-    ].extend(
-        round_16
-    )
+    ] = round_16
 
-    # ROUND OF 16
-    quarter_finalists = (
-        play_round(
-            round_16
-        )
+    quarter = play_round(
+        round_16,
+        stats,
+        verbose,
+        "Round of 16"
     )
 
     stats[
         "quarter"
-    ].extend(
-        quarter_finalists
-    )
+    ] = quarter
 
-    # QUARTERS
-    semi_finalists = (
-        play_round(
-            quarter_finalists
-        )
+    semi = play_round(
+        quarter,
+        stats,
+        verbose,
+        "Quarter-finals"
     )
 
     stats[
         "semi"
-    ].extend(
-        semi_finalists
-    )
+    ] = semi
 
-    # SEMIS
-    finalists = (
-        play_round(
-            semi_finalists
-        )
+    finalists = play_round(
+        semi,
+        stats,
+        verbose,
+        "Semi-finals"
     )
 
     stats[
         "final"
-    ].extend(
-        finalists
-    )
+    ] = finalists
 
-    # FINAL
     champion = (
         play_knockout_match(
             finalists[0],
@@ -230,5 +454,23 @@ def simulate_world_cup(
     stats[
         "champion"
     ] = champion
+
+    if verbose:
+
+        print(
+            "\nFINAL"
+        )
+
+        print(
+            f"{finalists[0]} "
+            f"vs "
+            f"{finalists[1]}"
+        )
+
+        print(
+            f"\n🏆 "
+            f"CHAMPION: "
+            f"{champion}"
+        )
 
     return stats

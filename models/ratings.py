@@ -2,7 +2,7 @@ import numpy as np
 
 from teams import teams
 
-BASE_XG = 1.35
+BASE_XG = 1.5
 
 HOSTS = [
     "USA",
@@ -25,7 +25,7 @@ def expected_goals(
     )
 
     elo_multiplier = np.exp(
-        elo_diff / 800
+        elo_diff / 450
     )
 
     xg_1 = (
