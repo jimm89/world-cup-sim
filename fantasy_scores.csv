@@ -1,0 +1,51 @@
+Team,Pot,Group,Fantasy_Score
+Australia,4,D,13.51
+Qatar,4,B,9.03
+Tunisia,4,F,9.00
+Iran,3,G,8.70
+Cape Verde,4,H,8.04
+South Africa,4,A,7.97
+South Korea,3,A,7.85
+Ivory Coast,3,E,7.79
+Uzbekistan,4,K,7.04
+Panama,4,L,6.99
+Senegal,3,I,6.15
+Jordan,4,J,3.24
+Iraq,4,I,2.69
+Haiti,4,C,2.63
+New Zealand,4,G,2.17
+Algeria,3,J,2.06
+Curacao,4,E,1.79
+Scotland,3,C,1.21
+Paraguay,3,D,0.89
+Sweden,3,F,0.32
+Morocco,2,C,-1.16
+Bosnia and Herzegovina,3,B,-1.68
+Uruguay,2,H,-2.61
+Congo DR,3,K,-2.64
+Croatia,2,L,-3.06
+Ghana,3,L,-3.71
+Colombia,2,K,-3.78
+Norway,2,I,-4.83
+Canada,2,B,-5.21
+Japan,2,F,-5.22
+Ecuador,2,E,-5.23
+Saudi Arabia,3,H,-5.63
+Austria,2,J,-6.02
+Turkey,2,D,-6.27
+Czechia,2,A,-7.21
+Egypt,2,G,-7.43
+Spain,1,H,-8.70
+Argentina,1,J,-9.21
+England,1,L,-10.01
+France,1,I,-11.40
+Belgium,1,G,-12.01
+Portugal,1,K,-12.23
+Germany,1,E,-12.37
+Netherlands,1,F,-13.41
+Brazil,1,C,-13.69
+Switzerland,1,B,-14.63
+Mexico,1,A,-17.30
+USA,1,D,-17.65
+
+Runtime: 217.81s

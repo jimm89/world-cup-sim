@@ -111,7 +111,16 @@ def play_round(
             ) + g1
         )
 
-        if g1 == g2:
+        # Decide winner
+        if g1 > g2:
+
+            winner = team_1
+
+        elif g2 > g1:
+
+            winner = team_2
+
+        else:
 
             winner = (
                 play_knockout_match(
@@ -120,12 +129,34 @@ def play_round(
                 )
             )
 
-        else:
+            loser = (
+                team_2
+                if winner
+                == team_1
+                else team_1
+            )
 
-            winner = (
-                team_1
-                if g1 > g2
-                else team_2
+            # Fantasy penalty bonus
+            stats[
+                "fantasy_bonus"
+            ][winner] = (
+                stats[
+                    "fantasy_bonus"
+                ].get(
+                    winner,
+                    0
+                ) + 3
+            )
+
+            stats[
+                "fantasy_bonus"
+            ][loser] = (
+                stats[
+                    "fantasy_bonus"
+                ].get(
+                    loser,
+                    0
+                ) - 3
             )
 
         winners.append(
@@ -158,7 +189,8 @@ def simulate_world_cup(
         "final": [],
         "champion": None,
         "goals_for": {},
-        "goals_against": {}
+        "goals_against": {},
+        "fantasy_bonus": {}
     }
 
     qualified = {}
@@ -290,7 +322,6 @@ def simulate_world_cup(
             }
         )
 
-    # BEST THIRD-PLACE TEAMS
     third_place_sorted = sorted(
         third_place,
         key=lambda x: (
@@ -303,15 +334,6 @@ def simulate_world_cup(
 
     best_third = (
         third_place_sorted[:8]
-    )
-
-    stats[
-        "group"
-    ].extend(
-        [
-            x["team"]
-            for x in best_third
-        ]
     )
 
     groups_key = "".join(
@@ -396,20 +418,12 @@ def simulate_world_cup(
             ]
         )
 
-    stats[
-        "round_32"
-    ] = knockout_teams
-
     round_16 = play_round(
         knockout_teams,
         stats,
         verbose,
         "Round of 32"
     )
-
-    stats[
-        "round_16"
-    ] = round_16
 
     quarter = play_round(
         round_16,
@@ -418,10 +432,6 @@ def simulate_world_cup(
         "Round of 16"
     )
 
-    stats[
-        "quarter"
-    ] = quarter
-
     semi = play_round(
         quarter,
         stats,
@@ -429,20 +439,12 @@ def simulate_world_cup(
         "Quarter-finals"
     )
 
-    stats[
-        "semi"
-    ] = semi
-
     finalists = play_round(
         semi,
         stats,
         verbose,
         "Semi-finals"
     )
-
-    stats[
-        "final"
-    ] = finalists
 
     champion = (
         play_knockout_match(
@@ -454,23 +456,5 @@ def simulate_world_cup(
     stats[
         "champion"
     ] = champion
-
-    if verbose:
-
-        print(
-            "\nFINAL"
-        )
-
-        print(
-            f"{finalists[0]} "
-            f"vs "
-            f"{finalists[1]}"
-        )
-
-        print(
-            f"\n🏆 "
-            f"CHAMPION: "
-            f"{champion}"
-        )
 
     return stats

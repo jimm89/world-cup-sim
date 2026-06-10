@@ -6,15 +6,15 @@ from tournament.world_cup import (
     simulate_world_cup
 )
 
-N_SIMS = 100
+N_SIMS = 100000
 
 start = time.time()
 
 goals_for = defaultdict(int)
 goals_against = defaultdict(int)
 champions = defaultdict(int)
+fantasy_bonus = defaultdict(int)
 
-# Fantasy scoring weights
 POT_WEIGHTS = {
     1: (1, -4),
     2: (2, -3),
@@ -22,24 +22,35 @@ POT_WEIGHTS = {
     4: (4, -1)
 }
 
-# Build team list + pot lookup
-all_teams = []
 team_pot = {}
+team_group = {}
+all_teams = []
 
-for group in groups.values():
+# Build metadata
+for (
+    group_name,
+    teams
+) in groups.items():
 
-    for i, team in enumerate(group):
+    for i, team in enumerate(
+        teams
+    ):
 
         pot = i + 1
-
-        all_teams.append(
-            team
-        )
 
         team_pot[
             team
         ] = pot
 
+        team_group[
+            team
+        ] = group_name
+
+        all_teams.append(
+            team
+        )
+
+# Simulations
 for _ in range(
     N_SIMS
 ):
@@ -53,7 +64,6 @@ for _ in range(
         )
     )
 
-    # Goals
     for (
         team,
         gf
@@ -80,7 +90,19 @@ for _ in range(
             team
         ] += ga
 
-    # Champion
+    for (
+        team,
+        bonus
+    ) in (
+        stats[
+            "fantasy_bonus"
+        ].items()
+    ):
+
+        fantasy_bonus[
+            team
+        ] += bonus
+
     champions[
         stats[
             "champion"
@@ -88,9 +110,9 @@ for _ in range(
     ] += 1
 
 
+# CSV header
 print(
-    f"\nWORLD CUP "
-    f"({N_SIMS:,} SIMS)\n"
+    "Team,Pot,Group,Fantasy_Score"
 )
 
 results = []
@@ -111,17 +133,24 @@ for team in all_teams:
         / N_SIMS
     )
 
-    champion_pct = (
-        champions[
+    avg_bonus = (
+        fantasy_bonus[
             team
         ]
         / N_SIMS
-        * 100
     )
 
-    pot = team_pot[
-        team
-    ]
+    pot = (
+        team_pot[
+            team
+        ]
+    )
+
+    group = (
+        team_group[
+            team
+        ]
+    )
 
     c1, c2 = (
         POT_WEIGHTS[
@@ -132,20 +161,19 @@ for team in all_teams:
     fantasy_score = (
         c1 * avg_gf
         + c2 * avg_ga
+        + avg_bonus
     )
 
     results.append(
         (
             fantasy_score,
             team,
-            avg_gf,
-            avg_ga,
-            champion_pct,
-            pot
+            pot,
+            group
         )
     )
 
-# Sort by fantasy score
+# Sort highest fantasy score first
 results.sort(
     reverse=True
 )
@@ -153,19 +181,15 @@ results.sort(
 for (
     fantasy_score,
     team,
-    avg_gf,
-    avg_ga,
-    champion_pct,
-    pot
+    pot,
+    group
 ) in results:
 
     print(
-        f"{team:<22}"
-        f"Pot {pot} | "
-        f"GF: {avg_gf:>5.2f} | "
-        f"GA: {avg_ga:>5.2f} | "
-        f"Champion: {champion_pct:>6.2f}% | "
-        f"Fantasy: {fantasy_score:>6.2f}"
+        f"{team},"
+        f"{pot},"
+        f"{group},"
+        f"{fantasy_score:.2f}"
     )
 
 end = time.time()

@@ -1,39 +1,39 @@
 group,team
 A,Mexico
+A,Czechia
 A,South Korea
 A,South Africa
-A,Czechia
-B,Canada
 B,Switzerland
-B,Qatar
+B,Canada
 B,Bosnia and Herzegovina
+B,Qatar
 C,Brazil
 C,Morocco
 C,Scotland
 C,Haiti
 D,USA
-D,Australia
-D,Paraguay
 D,Turkey
+D,Paraguay
+D,Australia
 E,Germany
 E,Ecuador
 E,Ivory Coast
 E,Curacao
 F,Netherlands
 F,Japan
-F,Tunisia
 F,Sweden
+F,Tunisia
 G,Belgium
-G,Iran
 G,Egypt
+G,Iran
 G,New Zealand
 H,Spain
 H,Uruguay
 H,Saudi Arabia
 H,Cape Verde
 I,France
-I,Senegal
 I,Norway
+I,Senegal
 I,Iraq
 J,Argentina
 J,Austria
@@ -41,8 +41,8 @@ J,Algeria
 J,Jordan
 K,Portugal
 K,Colombia
-K,Uzbekistan
 K,Congo DR
+K,Uzbekistan
 L,England
 L,Croatia
 L,Ghana
