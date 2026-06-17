@@ -46,9 +46,9 @@ def play_round(
 
     if verbose:
 
-        print(
-            f"\n{round_name.upper()}"
-        )
+        print(f"\n{round_name.upper()}")
+
+    round_matches = []
 
     for i in range(
         0,
@@ -59,118 +59,103 @@ def play_round(
         team_1 = teams[i]
         team_2 = teams[i + 1]
 
-        g1, g2 = (
-            simulate_match(
-                team_1,
-                team_2
-            )
+        g1, g2 = simulate_match(
+            team_1,
+            team_2
         )
 
         # Track goals
-        stats[
-            "goals_for"
-        ][team_1] = (
-            stats[
-                "goals_for"
-            ].get(
-                team_1,
-                0
-            ) + g1
+
+        stats["goals_for"][team_1] = (
+            stats["goals_for"].get(team_1, 0)
+            + g1
         )
 
-        stats[
-            "goals_against"
-        ][team_1] = (
-            stats[
-                "goals_against"
-            ].get(
-                team_1,
-                0
-            ) + g2
+        stats["goals_against"][team_1] = (
+            stats["goals_against"].get(team_1, 0)
+            + g2
         )
 
-        stats[
-            "goals_for"
-        ][team_2] = (
-            stats[
-                "goals_for"
-            ].get(
-                team_2,
-                0
-            ) + g2
+        stats["goals_for"][team_2] = (
+            stats["goals_for"].get(team_2, 0)
+            + g2
         )
 
-        stats[
-            "goals_against"
-        ][team_2] = (
-            stats[
-                "goals_against"
-            ].get(
-                team_2,
-                0
-            ) + g1
+        stats["goals_against"][team_2] = (
+            stats["goals_against"].get(team_2, 0)
+            + g1
         )
 
-        # Decide winner
         if g1 > g2:
 
             winner = team_1
+            method = "FT"
 
         elif g2 > g1:
 
             winner = team_2
+            method = "FT"
 
         else:
 
-            winner = (
-                play_knockout_match(
-                    team_1,
-                    team_2
-                )
+            details = play_knockout_match(
+                team_1,
+                team_2,
+                return_details=True,
             )
+
+            winner = details["winner"]
+            method = details["method"]
 
             loser = (
                 team_2
-                if winner
-                == team_1
+                if winner == team_1
                 else team_1
             )
 
-            # Fantasy penalty bonus
-            stats[
-                "fantasy_bonus"
-            ][winner] = (
-                stats[
-                    "fantasy_bonus"
-                ].get(
-                    winner,
-                    0
-                ) + 3
+            stats["fantasy_bonus"][winner] = (
+                stats["fantasy_bonus"].get(winner, 0)
+                + 3
             )
 
-            stats[
-                "fantasy_bonus"
-            ][loser] = (
-                stats[
-                    "fantasy_bonus"
-                ].get(
-                    loser,
-                    0
-                ) - 3
+            stats["fantasy_bonus"][loser] = (
+                stats["fantasy_bonus"].get(loser, 0)
+                - 3
             )
 
-        winners.append(
-            winner
+            g1 = details["goals_1"]
+            g2 = details["goals_2"]
+
+        round_matches.append(
+            {
+                "team_1": team_1,
+                "team_2": team_2,
+                "goals_1": g1,
+                "goals_2": g2,
+                "winner": winner,
+                "method": method,
+            }
         )
+
+        winners.append(winner)
 
         if verbose:
 
-            print(
-                f"{team_1} "
-                f"{g1}-{g2} "
-                f"{team_2} "
-                f"→ {winner}"
+            suffix = (
+                ""
+                if method == "FT"
+                else f" ({method})"
             )
+
+            print(
+                f"{team_1} {g1}-{g2} {team_2}"
+                f" → {winner}{suffix}"
+            )
+
+    stats.setdefault(
+        "knockout_matches",
+        {}
+    )[round_name] = round_matches
 
     return winners
 
@@ -190,7 +175,12 @@ def simulate_world_cup(
         "champion": None,
         "goals_for": {},
         "goals_against": {},
-        "fantasy_bonus": {}
+        "fantasy_bonus": {},
+
+        # New fields for UI
+        "group_fixtures": {},
+        "group_tables": {},
+        "knockout_matches": {},
     }
 
     qualified = {}
@@ -213,6 +203,9 @@ def simulate_world_cup(
                 teams
             )
         )
+
+        stats["group_fixtures"][group_name] = fixtures
+        stats["group_tables"][group_name] = table
 
         # Track goals
         for (
@@ -446,15 +439,16 @@ def simulate_world_cup(
         "Semi-finals"
     )
 
-    champion = (
-        play_knockout_match(
-            finalists[0],
-            finalists[1]
-        )
+    final = play_knockout_match(
+        finalists[0],
+        finalists[1],
+        return_details=True,
     )
 
-    stats[
-        "champion"
-    ] = champion
+    stats["knockout_matches"]["Final"] = [
+        final
+    ]
+
+    stats["champion"] = final["winner"]
 
     return stats
